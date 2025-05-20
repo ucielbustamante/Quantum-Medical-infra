@@ -1,0 +1,13 @@
+#Archivos de logs
+logs/
+
+#Archivos de dashboards
+grafana/dashboards/dashboards.yml
+#Archivos de loki
+
+loki-data/
+
+#Archivos de postgresx/
+postgres-config/
+
+.env
