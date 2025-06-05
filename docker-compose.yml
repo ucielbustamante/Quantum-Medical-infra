@@ -81,6 +81,7 @@ services:
     env_file: .env
     environment:
       VITE_API_URL: ${VITE_API_URL}
+      REACT_APP_API_URL: ${REACT_APP_API_URL}
     volumes:
       - ../Quantum-Medical-frontend:/app
       - /app/node_modules
@@ -149,6 +150,19 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - 'URLS=[{"name": "Quantum Medical API", "url": "/docs/openapi.json"}]'
+    volumes:
+      - ./swagger/openapi.json:/usr/share/nginx/html/docs/openapi.json:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
 
 volumes:
   db_data:
