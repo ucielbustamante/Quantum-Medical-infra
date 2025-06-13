@@ -104,6 +104,7 @@ services:
       - ./loki-config.yml:/etc/loki/local-config.yml
       - ./loki-data:/loki
     command: -config.file=/etc/loki/local-config.yml
+    restart: unless-stopped
 
   promtail:
     image: grafana/promtail:2.9.3
@@ -115,6 +116,7 @@ services:
     depends_on:
       - backend
       - loki
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
@@ -122,6 +124,7 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana
@@ -134,6 +137,7 @@ services:
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards/files
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4
@@ -150,14 +154,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
+    
   swagger-ui:
     image: swaggerapi/swagger-ui
     container_name: swagger-ui
     ports:
       - "8080:8080"
     environment:
-      - 'URLS=[{"name": "Quantum Medical API", "url": "/docs/openapi.json"}]'
+      - SWAGGER_JSON=/usr/share/nginx/html/docs/openapi.json
+      - URLS_PRIMARY_NAME=Quantum Medical API
     volumes:
       - ./swagger/openapi.json:/usr/share/nginx/html/docs/openapi.json:ro
     depends_on:
