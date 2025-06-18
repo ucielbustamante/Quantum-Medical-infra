@@ -1231,16 +1231,6 @@
             }
           },
           {
-            "name": "key",
-            "in": "query",
-            "required": true,
-            "description": "Clave de la clínica/sucursal",
-            "schema": {
-              "type": "string",
-              "example": "main"
-            }
-          },
-          {
             "name": "startDate",
             "in": "query",
             "required": true,
