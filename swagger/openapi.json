@@ -9,6 +9,10 @@
     {
       "url": "http://localhost:5000/api",
       "description": "Servidor de desarrollo"
+    },
+    {
+      "url": "https://ucielbustamante.online/api",
+      "description": "Servidor de producción"
     }
   ],
   "components": {
