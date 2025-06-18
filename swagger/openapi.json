@@ -1071,39 +1071,202 @@
         }
       }
     },
-    "/doctors/{id}/availability": {
+    "/doctors/{id}/available-slots": {
       "get": {
-        "tags": ["Disponibilidad"],
-        "summary": "Listar disponibilidades de un doctor específico",
+        "tags": ["Citas"],
+        "summary": "Obtener turnos disponibles de un doctor",
+        "description": "Obtiene todos los turnos disponibles de un doctor en un rango de fechas específico. Los turnos están disponibles cuando patient_id es null (no reservados) y tienen status pending.",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
+            "description": "ID único del doctor",
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "description": "Fecha de inicio en formato YYYY-MM-DD",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-01-15"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "description": "Fecha de fin en formato YYYY-MM-DD",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-01-20"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Disponibilidades del doctor",
+            "description": "Lista de turnos disponibles del doctor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "description": "Array de turnos disponibles",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "ID único del appointment"
+                          },
+                          "date": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Fecha del turno"
+                          },
+                          "start_time": {
+                            "type": "string",
+                            "description": "Hora de inicio del turno",
+                            "example": "09:00:00"
+                          },
+                          "end_time": {
+                            "type": "string",
+                            "description": "Hora de fin del turno",
+                            "example": "09:30:00"
+                          },
+                          "duration_minutes": {
+                            "type": "integer",
+                            "description": "Duración del turno en minutos",
+                            "example": 30
+                          }
+                        },
+                        "required": ["id", "date", "start_time", "end_time", "duration_minutes"]
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "Número total de turnos disponibles",
+                      "example": 5
+                    }
+                  },
+                  "required": ["data", "total"]
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Turnos disponibles encontrados",
+                    "value": {
+                      "data": [
+                        {
+                          "id": "123e4567-e89b-12d3-a456-426614174000",
+                          "date": "2024-01-15",
+                          "start_time": "09:00:00",
+                          "end_time": "09:30:00",
+                          "duration_minutes": 30
+                        },
+                        {
+                          "id": "123e4567-e89b-12d3-a456-426614174001",
+                          "date": "2024-01-15",
+                          "start_time": "09:30:00",
+                          "end_time": "10:00:00",
+                          "duration_minutes": 30
+                        }
+                      ],
+                      "total": 2
+                    }
+                  },
+                  "empty": {
+                    "summary": "Sin turnos disponibles",
+                    "value": {
+                      "data": [],
+                      "total": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "examples": [
+                        "Se requieren los parámetros startDate y endDate (YYYY-MM-DD)",
+                        "Formato de fecha inválido. Use YYYY-MM-DD",
+                        "startDate debe ser anterior o igual a endDate"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Doctor no encontrado",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "statusCode": {
-                      "type": "integer"
+                      "type": "integer",
+                      "example": 404
                     },
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/DoctorAvailability"
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Doctor no encontrado"
+                        }
                       }
                     }
                   }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1350,6 +1513,44 @@
                     },
                     "message": {
                       "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doctors/{doctorId}/available-slots": {
+      "get": {
+        "tags": ["Citas"],
+        "summary": "Listar citas de un doctor (Doctor propio, Admin)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "doctorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de citas disponibles del doctor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Appointment"
+                      }
                     }
                   }
                 }
