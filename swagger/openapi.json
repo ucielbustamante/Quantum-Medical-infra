@@ -2279,47 +2279,6 @@
         }
       }
     },
-    "/hello": {
-      "get": {
-        "tags": ["Sistema"],
-        "summary": "Endpoint de prueba",
-        "responses": {
-          "200": {
-            "description": "Respuesta de prueba",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/metrics": {
-      "get": {
-        "tags": ["Sistema"],
-        "summary": "Métricas del sistema (Prometheus)",
-        "responses": {
-          "200": {
-            "description": "Métricas en formato Prometheus",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/admin/db-stats": {
       "get": {
         "tags": ["Sistema"],
