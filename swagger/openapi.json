@@ -54,16 +54,9 @@
           },
           "is_active": {
             "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
           }
-        }
+        },
+        "required": ["id", "name", "lastname", "email", "role", "dni", "is_active"]
       },
       "Doctor": {
         "type": "object",
@@ -291,38 +284,64 @@
           }
         }
       },
-      "Error": {
+      "LoginResponse": {
         "type": "object",
         "properties": {
-          "statusCode": {
-            "type": "integer"
-          },
+          "statusCode": { "type": "integer" },
           "data": {
             "type": "object",
             "properties": {
-              "message": {
-                "type": "string"
-              },
-              "error": {
-                "type": "string"
-              }
+              "id": { "type": "string", "format": "uuid" },
+              "email": { "type": "string", "format": "email" },
+              "role": { "type": "string" },
+              "accessToken": { "type": "string" },
+              "name": { "type": "string" },
+              "lastname": { "type": "string" }
+            },
+            "required": ["id", "email", "role", "accessToken", "name", "lastname"]
+          }
+        },
+        "required": ["statusCode", "data"]
+      },
+      "RegisterResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": { "type": "integer" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "email": { "type": "string", "format": "email" },
+              "role": { "type": "string" },
+              "accessToken": { "type": "string" }
+            },
+            "required": ["id", "email", "role", "accessToken"]
+          }
+        },
+        "required": ["statusCode", "data"]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "statusCode": { "type": "integer" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "error": { "type": "string" }
             }
           }
-        }
+        },
+        "required": ["statusCode", "data"]
       },
       "Success": {
         "type": "object",
         "properties": {
-          "statusCode": {
-            "type": "integer"
-          },
-          "data": {
-            "type": "object"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
+          "statusCode": { "type": "integer" },
+          "data": { "type": "object" },
+          "message": { "type": "string" }
+        },
+        "required": ["statusCode", "data"]
       }
     }
   },
@@ -379,15 +398,18 @@
         },
         "responses": {
           "201": {
-            "description": "Usuario registrado exitosamente"
+            "description": "Usuario registrado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RegisterResponse" }
+              }
+            }
           },
           "400": {
             "description": "Datos inválidos",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -428,17 +450,7 @@
             "description": "Login exitoso",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "token": {
-                      "type": "string"
-                    },
-                    "user": {
-                      "$ref": "#/components/schemas/User"
-                    }
-                  }
-                }
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
               }
             }
           },
@@ -446,9 +458,15 @@
             "description": "Credenciales inválidas",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuario no encontrado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -482,15 +500,18 @@
         },
         "responses": {
           "200": {
-            "description": "Email de reset enviado"
+            "description": "Email de reset enviado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" }
+              }
+            }
           },
           "404": {
             "description": "Usuario no encontrado",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -532,22 +553,7 @@
             "description": "Contraseña actualizada exitosamente",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
+                "schema": { "$ref": "#/components/schemas/Success" }
               }
             }
           },
@@ -555,9 +561,7 @@
             "description": "Token inválido o expirado",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -592,15 +596,9 @@
     },
     "/rbac/doctor/dashboard": {
       "get": {
-        "tags": [
-          "RBAC"
-        ],
+        "tags": ["RBAC"],
         "summary": "Obtener dashboard del doctor",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "responses": {
           "200": {
             "description": "Dashboard del doctor",
@@ -609,15 +607,11 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "doctor": {
-                          "$ref": "#/components/schemas/Doctor"
-                        }
+                        "doctor": { "$ref": "#/components/schemas/Doctor" }
                       }
                     }
                   }
@@ -629,9 +623,7 @@
             "description": "No autorizado",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -640,15 +632,9 @@
     },
     "/rbac/admin/users": {
       "get": {
-        "tags": [
-          "RBAC"
-        ],
+        "tags": ["RBAC"],
         "summary": "Listar todos los usuarios (Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "responses": {
           "200": {
             "description": "Lista de usuarios",
@@ -657,17 +643,13 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
                         "users": {
                           "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/User"
-                          }
+                          "items": { "$ref": "#/components/schemas/User" }
                         }
                       }
                     }
@@ -681,15 +663,9 @@
     },
     "/rbac/patient/profile": {
       "get": {
-        "tags": [
-          "RBAC"
-        ],
+        "tags": ["RBAC"],
         "summary": "Obtener perfil del paciente",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "responses": {
           "200": {
             "description": "Perfil del paciente",
@@ -698,23 +674,17 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
                         "user": {
                           "allOf": [
-                            {
-                              "$ref": "#/components/schemas/User"
-                            },
+                            { "$ref": "#/components/schemas/User" },
                             {
                               "type": "object",
                               "properties": {
-                                "patient": {
-                                  "$ref": "#/components/schemas/Patient"
-                                }
+                                "patient": { "$ref": "#/components/schemas/Patient" }
                               }
                             }
                           ]
@@ -729,121 +699,11 @@
         }
       }
     },
-    "/doctors/search": {
-      "post": {
-        "tags": [
-          "Doctores"
-        ],
-        "summary": "Buscar doctores",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "query": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Lista de doctores encontrados"
-          }
-        }
-      }
-    },
-    "/doctors/{id}": {
-      "put": {
-        "tags": [
-          "Doctores"
-        ],
-        "summary": "Actualizar doctor",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "license_number": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Doctor actualizado"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Doctores"
-        ],
-        "summary": "Eliminar doctor",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Doctor eliminado"
-          }
-        }
-      }
-    },
     "/patients/search": {
       "post": {
-        "tags": [
-          "Pacientes"
-        ],
+        "tags": ["Pacientes"],
         "summary": "Buscar pacientes",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "requestBody": {
           "required": true,
           "content": {
@@ -851,9 +711,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "query": {
-                    "type": "string"
-                  }
+                  "query": { "type": "string" }
                 }
               }
             }
@@ -861,32 +719,37 @@
         },
         "responses": {
           "200": {
-            "description": "Lista de pacientes encontrados"
+            "description": "Lista de pacientes encontrados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "patients": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Patient" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/patients/{id}": {
       "put": {
-        "tags": [
-          "Pacientes"
-        ],
+        "tags": ["Pacientes"],
         "summary": "Actualizar paciente",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "requestBody": {
           "required": true,
@@ -895,16 +758,9 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "health_insurance": {
-                    "type": "string"
-                  },
-                  "health_insurance_number": {
-                    "type": "string"
-                  },
-                  "birthday": {
-                    "type": "string",
-                    "format": "date"
-                  }
+                  "health_insurance": { "type": "string" },
+                  "health_insurance_number": { "type": "string" },
+                  "birthday": { "type": "string", "format": "date" }
                 }
               }
             }
@@ -912,43 +768,156 @@
         },
         "responses": {
           "200": {
-            "description": "Paciente actualizado"
+            "description": "Paciente actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": { "type": "string" },
+                        "patient": { "$ref": "#/components/schemas/Patient" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       },
       "delete": {
-        "tags": [
-          "Pacientes"
-        ],
+        "tags": ["Pacientes"],
         "summary": "Eliminar paciente",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "responses": {
           "200": {
-            "description": "Paciente eliminado"
+            "description": "Paciente eliminado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doctors/search": {
+      "post": {
+        "tags": ["Doctores"],
+        "summary": "Buscar doctores",
+        "security": [ { "bearerAuth": [] } ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lista de doctores encontrados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "doctors": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Doctor" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doctors/{id}": {
+      "put": {
+        "tags": ["Doctores"],
+        "summary": "Actualizar doctor",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "license_number": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Doctor actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": { "type": "string" },
+                        "doctor": { "$ref": "#/components/schemas/Doctor" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Doctores"],
+        "summary": "Eliminar doctor",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Doctor eliminado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" }
+              }
+            }
           }
         }
       }
     },
     "/specialties": {
       "get": {
-        "tags": [
-          "Especialidades"
-        ],
+        "tags": ["Especialidades"],
         "summary": "Listar todas las especialidades",
         "responses": {
           "200": {
@@ -956,9 +925,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Specialty"
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Specialty" }
+                    }
                   }
                 }
               }
@@ -967,28 +940,18 @@
         }
       },
       "post": {
-        "tags": [
-          "Especialidades"
-        ],
+        "tags": ["Especialidades"],
         "summary": "Crear nueva especialidad",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "name"
-                ],
+                "required": ["name"],
                 "properties": {
-                  "name": {
-                    "type": "string"
-                  }
+                  "name": { "type": "string" }
                 }
               }
             }
@@ -996,32 +959,35 @@
         },
         "responses": {
           "201": {
-            "description": "Especialidad creada"
+            "description": "Especialidad creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": { "type": "string" },
+                        "specialty": { "$ref": "#/components/schemas/Specialty" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/specialties/{id}": {
       "put": {
-        "tags": [
-          "Especialidades"
-        ],
+        "tags": ["Especialidades"],
         "summary": "Actualizar especialidad",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "requestBody": {
           "required": true,
@@ -1030,12 +996,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "is_active": {
-                    "type": "boolean"
-                  }
+                  "name": { "type": "string" },
+                  "is_active": { "type": "boolean" }
                 }
               }
             }
@@ -1043,43 +1005,49 @@
         },
         "responses": {
           "200": {
-            "description": "Especialidad actualizada"
+            "description": "Especialidad actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": { "type": "string" },
+                        "specialty": { "$ref": "#/components/schemas/Specialty" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       },
       "delete": {
-        "tags": [
-          "Especialidades"
-        ],
+        "tags": ["Especialidades"],
         "summary": "Eliminar especialidad",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "responses": {
           "200": {
-            "description": "Especialidad eliminada"
+            "description": "Especialidad eliminada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" }
+              }
+            }
           }
         }
       }
     },
     "/doctor-specialties": {
       "get": {
-        "tags": [
-          "Doctor-Especialidades"
-        ],
+        "tags": ["Doctor-Especialidades"],
         "summary": "Listar todas las asociaciones doctor-especialidad",
         "responses": {
           "200": {
@@ -1087,9 +1055,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DoctorSpecialty"
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/DoctorSpecialty" }
+                    }
                   }
                 }
               }
@@ -1098,34 +1070,19 @@
         }
       },
       "post": {
-        "tags": [
-          "Doctor-Especialidades"
-        ],
+        "tags": ["Doctor-Especialidades"],
         "summary": "Crear nueva asociación doctor-especialidad",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "doctor_id",
-                  "specialty_id"
-                ],
+                "required": ["doctor_id", "specialty_id"],
                 "properties": {
-                  "doctor_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "specialty_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  }
+                  "doctor_id": { "type": "string", "format": "uuid" },
+                  "specialty_id": { "type": "string", "format": "uuid" }
                 }
               }
             }
@@ -1133,54 +1090,52 @@
         },
         "responses": {
           "201": {
-            "description": "Asociación creada"
+            "description": "Asociación creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": { "type": "string" },
+                        "doctorSpecialty": { "$ref": "#/components/schemas/DoctorSpecialty" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/doctor-specialties/{doctor_id}/{specialty_id}": {
       "delete": {
-        "tags": [
-          "Doctor-Especialidades"
-        ],
+        "tags": ["Doctor-Especialidades"],
         "summary": "Eliminar asociación doctor-especialidad",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "doctor_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "specialty_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "doctor_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "specialty_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "responses": {
           "200": {
-            "description": "Asociación eliminada"
+            "description": "Asociación eliminada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Success" }
+              }
+            }
           }
         }
       }
     },
     "/availability": {
       "get": {
-        "tags": [
-          "Disponibilidad"
-        ],
+        "tags": ["Disponibilidad"],
         "summary": "Listar todas las disponibilidades de doctores",
         "responses": {
           "200": {
@@ -1190,14 +1145,285 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/DoctorAvailability"
+                      "items": { "$ref": "#/components/schemas/DoctorAvailability" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doctors/{id}/availability": {
+      "get": {
+        "tags": ["Disponibilidad"],
+        "summary": "Obtener disponibilidad de un doctor",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Disponibilidad del doctor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/DoctorAvailability" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Disponibilidad"],
+        "summary": "Crear disponibilidad para un doctor (Doctor, Admin)",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["weekday", "start_time", "end_time", "slot_duration_min"],
+                "properties": {
+                  "weekday": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6,
+                    "description": "0=Domingo, 1=Lunes, ..., 6=Sábado"
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "format": "time",
+                    "description": "HH:MM:SS"
+                  },
+                  "end_time": {
+                    "type": "string",
+                    "format": "time",
+                    "description": "HH:MM:SS"
+                  },
+                  "slot_duration_min": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Duración de cada cita en minutos"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Disponibilidad creada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" }
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicto de horarios",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/availability/{id}": {
+      "delete": {
+        "tags": ["Disponibilidad"],
+        "summary": "Eliminar disponibilidad (Doctor, Admin)",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "204": {
+            "description": "Disponibilidad eliminada exitosamente"
+          },
+          "404": {
+            "description": "Disponibilidad no encontrada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/appointments": {
+      "get": {
+        "tags": ["Citas"],
+        "summary": "Listar todas las citas (Admin)",
+        "security": [ { "bearerAuth": [] } ],
+        "responses": {
+          "200": {
+            "description": "Lista de todas las citas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Appointment" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Citas"],
+        "summary": "Crear nueva cita (Patient, Admin)",
+        "security": [ { "bearerAuth": [] } ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["doctor_id", "date", "start_time", "end_time"],
+                "properties": {
+                  "doctor_id": { "type": "string", "format": "uuid" },
+                  "date": { "type": "string", "format": "date" },
+                  "start_time": { "type": "string", "format": "time" },
+                  "end_time": { "type": "string", "format": "time" },
+                  "patient_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Requerido solo para Admin"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cita creada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": { "$ref": "#/components/schemas/Appointment" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "409": {
+            "description": "Turno ya ocupado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patients/{patientId}/appointments": {
+      "get": {
+        "tags": ["Citas"],
+        "summary": "Listar citas de un paciente (Patient propio, Admin)",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [
+          { "name": "patientId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de citas del paciente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Appointment" }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doctors/{doctorId}/appointments": {
+      "get": {
+        "tags": ["Citas"],
+        "summary": "Listar citas reales de un doctor (Doctor propio, Admin)",
+        "description": "Devuelve solo las citas que tienen patient_id (citas reales), excluyendo los turnos disponibles (patient_id null)",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [
+          { "name": "doctorId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de citas del doctor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": { "type": "integer" },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Appointment" }
                     }
                   }
                 }
@@ -1209,26 +1435,17 @@
     },
     "/doctors/{id}/available-slots": {
       "get": {
-        "tags": [
-          "Citas"
-        ],
+        "tags": ["Citas"],
         "summary": "Obtener turnos disponibles de un doctor",
         "description": "Los turnos están disponibles cuando patient_id es null y status = pending.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "description": "ID único del doctor",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
+            "schema": { "type": "string", "format": "uuid" }
           },
           {
             "name": "startDate",
@@ -1293,13 +1510,7 @@
                             "example": 30
                           }
                         },
-                        "required": [
-                          "id",
-                          "date",
-                          "start_time",
-                          "end_time",
-                          "duration_minutes"
-                        ]
+                        "required": ["id", "date", "start_time", "end_time", "duration_minutes"]
                       }
                     },
                     "total": {
@@ -1308,41 +1519,7 @@
                       "example": 5
                     }
                   },
-                  "required": [
-                    "data",
-                    "total"
-                  ]
-                },
-                "examples": {
-                  "success": {
-                    "summary": "Turnos disponibles encontrados",
-                    "value": {
-                      "data": [
-                        {
-                          "id": "123e4567-e89b-12d3-a456-426614174000",
-                          "date": "2024-01-15",
-                          "start_time": "09:00:00",
-                          "end_time": "09:30:00",
-                          "duration_minutes": 30
-                        },
-                        {
-                          "id": "123e4567-e89b-12d3-a456-426614174001",
-                          "date": "2024-01-15",
-                          "start_time": "09:30:00",
-                          "end_time": "10:00:00",
-                          "duration_minutes": 30
-                        }
-                      ],
-                      "total": 2
-                    }
-                  },
-                  "empty": {
-                    "summary": "Sin turnos disponibles",
-                    "value": {
-                      "data": [],
-                      "total": 0
-                    }
-                  }
+                  "required": ["data", "total"]
                 }
               }
             }
@@ -1371,9 +1548,7 @@
             "description": "No autenticado",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           },
@@ -1381,9 +1556,7 @@
             "description": "No autorizado",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           },
@@ -1394,17 +1567,11 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer",
-                      "example": 404
-                    },
+                    "statusCode": { "type": "integer", "example": 404 },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "message": {
-                          "type": "string",
-                          "example": "Doctor no encontrado"
-                        }
+                        "message": { "type": "string", "example": "Doctor no encontrado" }
                       }
                     }
                   }
@@ -1416,335 +1583,7 @@
             "description": "Error interno del servidor",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Disponibilidad"
-        ],
-        "summary": "Crear disponibilidad para un doctor (Doctor, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "weekday",
-                  "start_time",
-                  "end_time",
-                  "slot_duration_min"
-                ],
-                "properties": {
-                  "weekday": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 6,
-                    "description": "0=Domingo, 1=Lunes, ..., 6=Sábado"
-                  },
-                  "start_time": {
-                    "type": "string",
-                    "format": "time",
-                    "description": "HH:MM:SS"
-                  },
-                  "end_time": {
-                    "type": "string",
-                    "format": "time",
-                    "description": "HH:MM:SS"
-                  },
-                  "slot_duration_min": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "description": "Duración de cada cita en minutos"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Disponibilidad creada exitosamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string",
-                          "format": "uuid"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Datos inválidos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflicto de horarios",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/availability/{id}": {
-      "delete": {
-        "tags": [
-          "Disponibilidad"
-        ],
-        "summary": "Eliminar disponibilidad (Doctor, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Disponibilidad eliminada exitosamente"
-          },
-          "404": {
-            "description": "Disponibilidad no encontrada",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/appointments": {
-      "post": {
-        "tags": [
-          "Citas"
-        ],
-        "summary": "Crear nueva cita (Patient, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "doctor_id",
-                  "date",
-                  "start_time",
-                  "end_time"
-                ],
-                "properties": {
-                  "doctor_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "date": {
-                    "type": "string",
-                    "format": "date"
-                  },
-                  "start_time": {
-                    "type": "string",
-                    "format": "time"
-                  },
-                  "end_time": {
-                    "type": "string",
-                    "format": "time"
-                  },
-                  "patient_id": {
-                    "type": "string",
-                    "format": "uuid",
-                    "description": "Requerido solo para Admin"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Cita creada exitosamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/Appointment"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Datos inválidos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Turno ya ocupado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/patients/{patientId}/appointments": {
-      "get": {
-        "tags": [
-          "Citas"
-        ],
-        "summary": "Listar citas de un paciente (Patient propio, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Lista de citas del paciente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Appointment"
-                      }
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/doctors/{doctorId}/appointments": {
-      "get": {
-        "tags": [
-          "Citas"
-        ],
-        "summary": "Listar citas de un doctor (Doctor propio, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "doctorId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Lista de citas del doctor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Appointment"
-                      }
-                    }
-                  }
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -1753,25 +1592,11 @@
     },
     "/appointments/{id}/status": {
       "patch": {
-        "tags": [
-          "Citas"
-        ],
+        "tags": ["Citas"],
         "summary": "Actualizar estado de una cita (Doctor propietario, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "requestBody": {
           "required": true,
@@ -1779,17 +1604,11 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "status"
-                ],
+                "required": ["status"],
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": [
-                      "pending",
-                      "confirmed",
-                      "cancelled"
-                    ]
+                    "enum": ["pending", "confirmed", "cancelled"]
                   }
                 }
               }
@@ -1804,9 +1623,8 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/Appointment"
-                    }
+                    "statusCode": { "type": "integer" },
+                    "data": { "$ref": "#/components/schemas/Appointment" }
                   }
                 }
               }
@@ -1816,9 +1634,7 @@
             "description": "Cita no encontrada",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -1827,25 +1643,11 @@
     },
     "/appointments/{id}": {
       "delete": {
-        "tags": [
-          "Citas"
-        ],
+        "tags": ["Citas"],
         "summary": "Eliminar cita (Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "responses": {
           "204": {
@@ -1855,9 +1657,7 @@
             "description": "Cita no encontrada",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -1866,37 +1666,20 @@
     },
     "/clinical-records": {
       "post": {
-        "tags": [
-          "Historiales Clínicos"
-        ],
+        "tags": ["Historiales Clínicos"],
         "summary": "Crear historial clínico (Doctor, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "patient_id",
-                  "title",
-                  "body"
-                ],
+                "required": ["patient_id", "title", "body"],
                 "properties": {
-                  "patient_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "title": {
-                    "type": "string"
-                  },
-                  "body": {
-                    "type": "string"
-                  }
+                  "patient_id": { "type": "string", "format": "uuid" },
+                  "title": { "type": "string" },
+                  "body": { "type": "string" }
                 }
               }
             }
@@ -1910,18 +1693,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "message": {
-                          "type": "string"
-                        },
-                        "clinicalRecord": {
-                          "$ref": "#/components/schemas/ClinicalRecord"
-                        }
+                        "message": { "type": "string" },
+                        "clinicalRecord": { "$ref": "#/components/schemas/ClinicalRecord" }
                       }
                     }
                   }
@@ -1933,56 +1710,22 @@
             "description": "Ya existe un historial para este paciente",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
         }
       },
       "get": {
-        "tags": [
-          "Historiales Clínicos"
-        ],
-        "summary": "Buscar historiales clínicos (Doctor, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "tags": ["Historiales Clínicos"],
+        "summary": "Buscar historiales clínicos (Doctor, Admin, Patient)",
+        "description": "Los pacientes solo pueden ver sus propios historiales. Los doctores y admins pueden buscar todos los historiales o filtrar por paciente.",
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "patient_id",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "title",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 10
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 0
-            }
-          }
+          { "name": "patient_id", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "title", "in": "query", "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } }
         ],
         "responses": {
           "200": {
@@ -1992,20 +1735,14 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "total": {
-                          "type": "integer"
-                        },
+                        "total": { "type": "integer" },
                         "records": {
                           "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ClinicalRecord"
-                          }
+                          "items": { "$ref": "#/components/schemas/ClinicalRecord" }
                         }
                       }
                     }
@@ -2019,25 +1756,11 @@
     },
     "/clinical-records/{id}": {
       "get": {
-        "tags": [
-          "Historiales Clínicos"
-        ],
+        "tags": ["Historiales Clínicos"],
         "summary": "Obtener historial clínico",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "responses": {
           "200": {
@@ -2047,15 +1770,11 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "clinicalRecord": {
-                          "$ref": "#/components/schemas/ClinicalRecord"
-                        }
+                        "clinicalRecord": { "$ref": "#/components/schemas/ClinicalRecord" }
                       }
                     }
                   }
@@ -2067,34 +1786,18 @@
             "description": "Historial no encontrado",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
         }
       },
       "put": {
-        "tags": [
-          "Historiales Clínicos"
-        ],
+        "tags": ["Historiales Clínicos"],
         "summary": "Actualizar historial clínico (Doctor, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "requestBody": {
           "required": true,
@@ -2103,12 +1806,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "title": {
-                    "type": "string"
-                  },
-                  "body": {
-                    "type": "string"
-                  }
+                  "title": { "type": "string" },
+                  "body": { "type": "string" }
                 }
               }
             }
@@ -2122,18 +1821,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "message": {
-                          "type": "string"
-                        },
-                        "clinicalRecord": {
-                          "$ref": "#/components/schemas/ClinicalRecord"
-                        }
+                        "message": { "type": "string" },
+                        "clinicalRecord": { "$ref": "#/components/schemas/ClinicalRecord" }
                       }
                     }
                   }
@@ -2144,34 +1837,18 @@
         }
       },
       "delete": {
-        "tags": [
-          "Historiales Clínicos"
-        ],
+        "tags": ["Historiales Clínicos"],
         "summary": "Eliminar historial clínico (Doctor, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "responses": {
           "200": {
             "description": "Historial eliminado exitosamente",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Success"
-                }
+                "schema": { "$ref": "#/components/schemas/Success" }
               }
             }
           }
@@ -2180,25 +1857,11 @@
     },
     "/clinical-documents/{id}": {
       "get": {
-        "tags": [
-          "Documentos Clínicos"
-        ],
+        "tags": ["Documentos Clínicos"],
         "summary": "Obtener documento clínico (Patient propietario, Doctor, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "responses": {
           "200": {
@@ -2208,19 +1871,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "document": {
-                          "$ref": "#/components/schemas/ClinicalDocument"
-                        },
-                        "downloadUrl": {
-                          "type": "string",
-                          "format": "uri"
-                        }
+                        "document": { "$ref": "#/components/schemas/ClinicalDocument" },
+                        "downloadUrl": { "type": "string", "format": "uri" }
                       }
                     }
                   }
@@ -2232,43 +1888,25 @@
             "description": "No autorizado para acceder a este documento",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
         }
       },
       "delete": {
-        "tags": [
-          "Documentos Clínicos"
-        ],
+        "tags": ["Documentos Clínicos"],
         "summary": "Eliminar documento clínico (Doctor, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "responses": {
           "200": {
             "description": "Documento eliminado exitosamente",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Success"
-                }
+                "schema": { "$ref": "#/components/schemas/Success" }
               }
             }
           }
@@ -2277,25 +1915,11 @@
     },
     "/clinical-documents/record/{id}": {
       "get": {
-        "tags": [
-          "Documentos Clínicos"
-        ],
+        "tags": ["Documentos Clínicos"],
         "summary": "Listar documentos de un historial clínico",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "responses": {
           "200": {
@@ -2305,17 +1929,13 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
                         "documents": {
                           "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ClinicalDocument"
-                          }
+                          "items": { "$ref": "#/components/schemas/ClinicalDocument" }
                         }
                       }
                     }
@@ -2329,25 +1949,11 @@
     },
     "/clinical-documents/upload/{id}": {
       "post": {
-        "tags": [
-          "Documentos Clínicos"
-        ],
+        "tags": ["Documentos Clínicos"],
         "summary": "Subir documento clínico (Doctor, Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "requestBody": {
           "required": true,
@@ -2356,17 +1962,9 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "user_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  }
+                  "file": { "type": "string", "format": "binary" },
+                  "description": { "type": "string" },
+                  "user_id": { "type": "string", "format": "uuid" }
                 }
               }
             }
@@ -2380,18 +1978,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "message": {
-                          "type": "string"
-                        },
-                        "document": {
-                          "$ref": "#/components/schemas/ClinicalDocument"
-                        }
+                        "message": { "type": "string" },
+                        "document": { "$ref": "#/components/schemas/ClinicalDocument" }
                       }
                     }
                   }
@@ -2403,284 +1995,7 @@
             "description": "No se proporcionó archivo",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/users": {
-      "post": {
-        "tags": [
-          "Usuarios"
-        ],
-        "summary": "Crear nuevo usuario (Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "email",
-                  "password",
-                  "name",
-                  "lastname",
-                  "role",
-                  "dni"
-                ],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "password": {
-                    "type": "string",
-                    "minLength": 6
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "lastname": {
-                    "type": "string"
-                  },
-                  "role": {
-                    "type": "string",
-                    "enum": [
-                      "Patient",
-                      "Doctor",
-                      "Admin"
-                    ]
-                  },
-                  "dni": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Usuario creado exitosamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        },
-                        "user": {
-                          "$ref": "#/components/schemas/User"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "No autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/users/search": {
-      "post": {
-        "tags": [
-          "Usuarios"
-        ],
-        "summary": "Buscar usuarios (Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "query": {
-                    "type": "string",
-                    "description": "Término de búsqueda"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Lista de usuarios encontrados",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "users": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/User"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/users/{id}": {
-      "put": {
-        "tags": [
-          "Usuarios"
-        ],
-        "summary": "Actualizar usuario (Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "lastname": {
-                    "type": "string"
-                  },
-                  "email": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "role": {
-                    "type": "string",
-                    "enum": [
-                      "Patient",
-                      "Doctor",
-                      "Admin"
-                    ]
-                  },
-                  "dni": {
-                    "type": "string"
-                  },
-                  "is_active": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Usuario actualizado exitosamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        },
-                        "user": {
-                          "$ref": "#/components/schemas/User"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Usuarios"
-        ],
-        "summary": "Eliminar usuario (Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Usuario eliminado exitosamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Success"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -2689,9 +2004,7 @@
     },
     "/logs/frontend": {
       "post": {
-        "tags": [
-          "Logs"
-        ],
+        "tags": ["Logs"],
         "summary": "Enviar logs del frontend",
         "requestBody": {
           "required": true,
@@ -2699,27 +2012,14 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "message",
-                  "level"
-                ],
+                "required": ["message", "level"],
                 "properties": {
-                  "message": {
-                    "type": "string"
-                  },
+                  "message": { "type": "string" },
                   "level": {
                     "type": "string",
-                    "enum": [
-                      "error",
-                      "warn",
-                      "info",
-                      "debug"
-                    ]
+                    "enum": ["error", "warn", "info", "debug"]
                   },
-                  "timestamp": {
-                    "type": "string",
-                    "format": "date-time"
-                  }
+                  "timestamp": { "type": "string", "format": "date-time" }
                 }
               }
             }
@@ -2733,15 +2033,11 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "statusCode": {
-                      "type": "integer"
-                    },
+                    "statusCode": { "type": "integer" },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "message": {
-                          "type": "string"
-                        }
+                        "message": { "type": "string" }
                       }
                     }
                   }
@@ -2753,9 +2049,7 @@
             "description": "No autorizado",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -2764,15 +2058,9 @@
     },
     "/admin/db-stats": {
       "get": {
-        "tags": [
-          "Sistema"
-        ],
+        "tags": ["Sistema"],
         "summary": "Estadísticas de base de datos (Admin)",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [ { "bearerAuth": [] } ],
         "responses": {
           "200": {
             "description": "Estadísticas de la base de datos",
@@ -2781,12 +2069,8 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object"
-                    }
+                    "status": { "type": "string" },
+                    "data": { "type": "object" }
                   }
                 }
               }
